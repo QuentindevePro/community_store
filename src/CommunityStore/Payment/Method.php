@@ -255,9 +255,8 @@ class Method extends Controller
         $goodMethods = [];
         foreach ($methods as $method) {
             // TODO: Now that setMethodController() may throw an Exception, what behavior this should have ?
-            if ($method->setMethodController() !== false) {
-                $goodMethods[] = $method;
-            }
+            $method->setMethodController();
+            $goodMethods[] = $method;
         }
 
         return $goodMethods;
@@ -268,7 +267,8 @@ class Method extends Controller
         return self::getMethods(true);
     }
 
-    public static function getAvailableMethods($total) {
+    public static function getAvailableMethods($total)
+    {
         $enabledMethods = self::getMethods(true);
 
         $availableMethods = [];
@@ -298,17 +298,17 @@ class Method extends Controller
             }
         }
 
-		$event = new PaymentEvent('add');
-		$event->setMethods($availableMethods);
+        $event = new PaymentEvent('add');
+        $event->setMethods($availableMethods);
 
-		\Events::dispatch(PaymentEvent::PAYMENT_ON_AVAILABLE_METHODS_GET, $event);
+        \Events::dispatch(PaymentEvent::PAYMENT_ON_AVAILABLE_METHODS_GET, $event);
 
-		$changed = $event->getChanged();
-		if ($changed){
-			$availableMethods = $event->getMethods();
-		}
+        $changed = $event->getChanged();
+        if ($changed) {
+            $availableMethods = $event->getMethods();
+        }
 
-		return $availableMethods;
+        return $availableMethods;
     }
 
 
