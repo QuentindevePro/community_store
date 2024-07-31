@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Concrete\Core\Controller\Controller;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Support\Facade\DatabaseORM as dbORM;
+use ReflectionException;
 
 /**
  * @ORM\Entity
@@ -165,9 +166,7 @@ class Method extends Controller
         $method = $em->find(__CLASS__, $pmID);
 
         if ($method) {
-            if ($method->setMethodController() === false) {
-                return false;
-            }
+            $method->setMethodController();
         }
 
         return ($method instanceof self) ? $method : false;
@@ -179,9 +178,7 @@ class Method extends Controller
         $method = $em->getRepository(__CLASS__)->findOneBy(['pmHandle' => $pmHandle]);
 
         if ($method) {
-            if ($method->setMethodController() === false) {
-                return false;
-            }
+            $method->setMethodController();
         }
 
         return ($method instanceof self) ? $method : false;
@@ -213,7 +210,7 @@ class Method extends Controller
         $className = $th->camelcase($this->pmHandle) . "PaymentMethod";
         $fullyQualifiedClassName = $namespace . '\\' . $className;
         if (!class_exists($fullyQualifiedClassName)) {
-            return false;
+            throw new ReflectionException(sprintf("The payment method controller at '%s' for handle %s is missing. Are you sure the namespace is correct", $fullyQualifiedClassName));
         }
         $this->methodController = $app->make($fullyQualifiedClassName);
 
@@ -257,6 +254,7 @@ class Method extends Controller
         }
         $goodMethods = [];
         foreach ($methods as $method) {
+            // TODO: Now that setMethodController() may throw an Exception, what behavior this should have ?
             if ($method->setMethodController() !== false) {
                 $goodMethods[] = $method;
             }
